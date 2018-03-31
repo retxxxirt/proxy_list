@@ -1,1 +1,1 @@
-from .api import ProxyList, update, stop_update, get, get_all
+from .api import ProxyList, update, start_update, stop_update, get, get_all

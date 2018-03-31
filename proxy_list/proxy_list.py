@@ -38,35 +38,40 @@ class ProxyList:
 
         return True
 
-    def update(self, interval = 60, sources = DEFAULT_SOURCES, single_executing = False):
+    def __update(self, sources = DEFAULT_SOURCES, interval = 0):
 
-        def update():
+        if interval and not self.__stop_update:
 
-            if not single_executing and not self.__stop_update:
+            Timer(interval, self.__update, [sources, interval]).start()
 
-                Timer(interval, update).start()
+        unique_proxies = {}
 
-            unique_proxies = {}
+        for source in sources:
 
-            for source in sources:
+            if type(source) == str:
 
-                if type(source) == str:
+                list = BUILT_IN_SOURCES[source]()
 
-                    list = BUILT_IN_SOURCES[source]()
+            else:
 
-                else:
+                list = source()
 
-                    list = source()
+            for proxy in list:
+                proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
 
-                for proxy in list:
+                unique_proxies[proxy['address']] = proxy
 
-                    proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
+        self.__list = [unique_proxies[key] for key in unique_proxies]
 
-                    unique_proxies[proxy['address']] = proxy
+    def update(self, sources = DEFAULT_SOURCES):
 
-            self.__list = [unique_proxies[key] for key in unique_proxies]
+        self.__update(sources)
 
-        update()
+    def start_update(self, interval = 60, sources = DEFAULT_SOURCES):
+
+        self.__stop_update = False
+
+        self.__update(sources, interval)
 
     def stop_update(self):
 

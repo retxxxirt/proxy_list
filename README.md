@@ -27,7 +27,21 @@ response = request.get('https://google.com', proxy = {'https': proxy['address'])
 
 <h3> update </h3>
 
-Start update proxy list.
+Update proxy list.
+
+<h4> Arguments: </h4>
+<ul>
+    <li>
+        <b>sources</b>
+        - list of sources. May contain name of built-in parser
+        (for example 'spys.one') or custom parser definitions. This definition
+        should return list of proxy objects. Default - all built-in parsers.
+    </li>
+</ul>
+
+<h3> start_update </h3>
+
+Start update proxy list with interval.
 
 <h4> Arguments: </h4>
 <ul>
@@ -38,7 +52,6 @@ Start update proxy list.
         (for example 'spys.one') or custom parser definitions. This definition
         should return list of proxy objects. Default - all built-in parsers.
     </li>
-    <li> <b>single_executing</b> - boolean argument. True for update once. Default - False
 </ul>
 
 <h3> stop_update </h3>

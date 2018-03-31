@@ -2,7 +2,7 @@ from proxy_list import ProxyList
 
 proxy_list = ProxyList()
 
-proxy_list.update(single_executing = True)
+proxy_list.update()
 
 def test_get():
 
