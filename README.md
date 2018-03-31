@@ -50,6 +50,7 @@ Return a random proxy object.
 
     'ip': '***.***.***.***',
     'port': '****',
+    'address': '****://***.***.***.***:****',
     'type': '****', # http, htpps, socks4, socks5
     'country': '**' # counrty code, for example: US, GB, RU
 
