@@ -24,7 +24,7 @@ def free_proxy_list_net():
             'ip': td_elements[0].text(),
             'port': td_elements[1].text(),
 
-            'type': 'http' if td_elements[6] == 'no' else 'https',
+            'type': 'http' if td_elements[6].text() == 'no' else 'https',
 
             'country': td_elements[2].text()
         })
@@ -84,12 +84,18 @@ def spys_one():
 
             port += str(values[key[0]] ^ values[key[1]])
 
+        type = td_elements[1].text().split('\n')
+
+        if len(type) > 1 and type[1] == 'S':
+
+            type = ['https']
+
         proxies.append({
 
             'ip': td_elements[0].find('.spy14').contents()[0],
             'port': port,
 
-            'type': td_elements[1].text().split('\n')[0].lower(),
+            'type': type[0].lower(),
 
             'country': td_elements[4].text().split('\n')[0]
         })
