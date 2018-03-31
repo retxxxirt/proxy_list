@@ -46,7 +46,7 @@ class ProxyList:
 
                 Timer(interval, update).start()
 
-            self.__list, unique_proxies = [], {}
+            unique_proxies = {}
 
             for source in sources:
 
