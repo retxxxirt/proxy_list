@@ -1,8 +1,8 @@
 This package help you to manage proxy list.
 
 Recently support next sites:
-<a href = 'spys.one/proxies/'>spys.one</a>,
-<a href = 'free-proxy-list.net'>free-proxy-list.net</a>
+<a href = 'http://spys.one/proxies/'>spys.one</a>,
+<a href = 'https://free-proxy-list.net/'>free-proxy-list.net</a>
 and your custom parsers.
 
 <h2> Installation </h2>
@@ -11,14 +11,16 @@ and your custom parsers.
 
 <h2> Usage </h2>
 
-    import proxy_list
-    import requests
+```python
+import proxy_list
+import requests
 
-    proxy_list.update()
+proxy_list.update()
 
-    proxy = proxy_list.get({'counrty': ['US', 'GB'], 'type': 'https'})
+proxy = proxy_list.get({'counrty': ['US', 'GB'], 'type': 'https'})
 
-    response = request.get('https://google.com', proxy = {'https': proxy['address'])})
+response = request.get('https://google.com', proxy = {'https': proxy['address'])})
+```
 
 <h2> Methods </h2>
 
