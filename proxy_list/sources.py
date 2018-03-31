@@ -1,11 +1,13 @@
+import json
 import requests
 from pyquery import PyQuery
+from iso3166 import countries
 
 def free_proxy_list_net():
 
     response = requests.get('https://free-proxy-list.net/')
 
-    html, list = PyQuery(response.text), []
+    html, proxies = PyQuery(response.text), []
 
     for tr_element in html.find('tbody tr'):
 
@@ -17,7 +19,7 @@ def free_proxy_list_net():
 
             td_elements[i] = html(td_element)
 
-        list.append({
+        proxies.append({
 
             'ip': td_elements[0].text(),
             'port': td_elements[1].text(),
@@ -27,7 +29,7 @@ def free_proxy_list_net():
             'country': td_elements[2].text()
         })
 
-    return list
+    return proxies
 
 def spys_one():
 
@@ -48,7 +50,7 @@ def spys_one():
 
     html = PyQuery(response.text)
 
-    list, tr_elements = [], html.find('.spy1x, .spy1xx')
+    proxies, tr_elements = [], html.find('.spy1x, .spy1xx')
 
     values, values_source = {}, html(html.find('body script')[2]).text().split(';')
 
@@ -82,7 +84,7 @@ def spys_one():
 
             port += str(values[key[0]] ^ values[key[1]])
 
-        list.append({
+        proxies.append({
 
             'ip': td_elements[0].find('.spy14').contents()[0],
             'port': port,
@@ -92,12 +94,70 @@ def spys_one():
             'country': td_elements[4].text().split('\n')[0]
         })
 
-    return list
+    return proxies
+
+def hidester_com():
+
+    response = requests.get(
+
+        'https://hidester.com/proxydata/php/data.php',
+
+        headers = {
+
+            'Host': 'hidester.com',
+            'Referer': 'https://hidester.com/proxylist/'
+        },
+
+        params = {
+
+            'limit': 100000,
+            'mykey': 'data',
+            'offset': 0,
+            'orderBy': 'latest_check',
+            'sortOrder': 'DESC',
+        }
+    )
+
+    proxies, proxies_source = [], json.loads(response.text)
+
+    for proxy in proxies_source:
+
+        countries_iso3166 = {
+
+            'VENEZUELA': 'Venezuela, Bolivarian Republic of',
+            'CURACAO': 'Curaçao',
+            'KOREA': 'Korea, Republic of',
+            'MOLDOVA': 'Moldova, Republic of',
+            'PALESTINIAN TERRITORY': 'Palestine, State of',
+            'UNITED KINGDOM': 'United Kingdom of Great Britain and Northern Ireland',
+            'VIETNAM': 'Viet Nam',
+            'CZECH REPUBLIC': 'Czechia',
+            'IRAN': 'Iran, Islamic Republic of'
+        }
+
+        for country in countries_iso3166:
+
+            if proxy['country'] == country:
+
+                proxy['country'] = countries_iso3166[country]
+
+        proxies.append({
+
+            'ip': proxy['IP'],
+            'port': str(proxy['PORT']),
+
+            'type': proxy['type'],
+
+            'country': countries.get(proxy['country']).alpha2
+        })
+
+    return proxies
 
 BUILT_IN_SOURCES = {
 
     'spys.one': spys_one,
-    'free-proxy-list.net': free_proxy_list_net
+    'free-proxy-list.net': free_proxy_list_net,
+    'hidester.com': hidester_com
 }
 
 DEFAULT_SOURCES = [key for key in BUILT_IN_SOURCES]

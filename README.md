@@ -2,7 +2,8 @@ This package help you to manage proxy list.
 
 Recently support next sites:
 <a href = 'http://spys.one/proxies/'>spys.one</a>,
-<a href = 'https://free-proxy-list.net/'>free-proxy-list.net</a>
+<a href = 'https://free-proxy-list.net/'>free-proxy-list.net</a>,
+<a href = 'https://hidester.com/proxylist/'>hidester.com</a>
 and your custom parsers.
 
 <h2> Installation </h2>
