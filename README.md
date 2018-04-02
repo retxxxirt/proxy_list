@@ -37,6 +37,12 @@ Update proxy list.
         (for example 'spys.one') or custom parser definitions. This definition
         should return list of proxy objects. Default - all built-in parsers.
     </li>
+    <li>
+        <b>check</b>
+        - False, if you doesn't want check proxy. May be True or parameters dict.
+        Dict may contain timeout (default 10s) and chunk_size (default 100).
+        chunk_size - number of proxies, which are checked together.
+    </li>
 </ul>
 
 <h3> start_update </h3>
@@ -45,12 +51,18 @@ Start update proxy list with interval.
 
 <h4> Arguments: </h4>
 <ul>
-    <li> <b>interval</b> - interval of update. Default - 60s</li>
+    <li> <b>interval</b> - interval of update. Default - 300s</li>
     <li>
         <b>sources</b>
         - list of sources. May contain name of built-in parser
         (for example 'spys.one') or custom parser definitions. This definition
         should return list of proxy objects. Default - all built-in parsers.
+    </li>
+    <li>
+        <b>check</b>
+        - False, if you doesn't want check proxy. May be True or parameters dict.
+        Dict may contain timeout (default 10s) and chunk_size (default 100).
+        chunk_size - number of proxies, which are checked together.
     </li>
 </ul>
 
