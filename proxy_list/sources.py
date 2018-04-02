@@ -138,7 +138,8 @@ def hidester_com():
             'UNITED KINGDOM': 'United Kingdom of Great Britain and Northern Ireland',
             'VIETNAM': 'Viet Nam',
             'CZECH REPUBLIC': 'Czechia',
-            'IRAN': 'Iran, Islamic Republic of'
+            'IRAN': 'Iran, Islamic Republic of',
+            'BOLIVIA': 'Bolivia, Plurinational State of'
         }
 
         for country in countries_iso3166:
