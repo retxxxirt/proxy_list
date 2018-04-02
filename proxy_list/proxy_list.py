@@ -1,6 +1,6 @@
 import random
 import requests
-from threading import Timer, Thread
+from threading import Thread, Timer
 
 from .sources import BUILT_IN_SOURCES, DEFAULT_SOURCES
 
@@ -10,7 +10,7 @@ class ProxyList:
 
         self.__proxies = []
 
-        self.__stop_update = False
+        self.__update_timer = None
 
     @staticmethod
     def __check_selector(proxy, selector):
@@ -88,11 +88,25 @@ class ProxyList:
 
         return proxies_checked
 
+    def __cancel_update_timer(self):
+
+        if self.__update_timer:
+
+            self.__update_timer.cancel()
+
+    def __start_update_timer(self, *args, **kwargs):
+
+        self.__cancel_update_timer()
+
+        self.__update_timer = Timer(*args, **kwargs)
+
+        self.__update_timer.start()
+
     def __update(self, sources, interval, check):
 
-        if interval and not self.__stop_update:
+        if interval:
 
-            Timer(interval, self.__update, [sources, interval, check]).start()
+            self.__start_update_timer(interval, self.__update, [sources, interval, check])
 
         unique_proxies = {}
 
@@ -102,12 +116,13 @@ class ProxyList:
 
                 proxies = BUILT_IN_SOURCES[source]()
 
+
+
             else:
 
                 proxies = source()
 
             for proxy in proxies:
-
                 proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
 
                 unique_proxies[proxy['address']] = proxy
@@ -120,9 +135,13 @@ class ProxyList:
 
                 self.__proxies = self.__check_proxies(proxies, **check)
 
+
+
             else:
 
                 self.__proxies = self.__check_proxies(proxies)
+
+
 
         else:
 
@@ -134,13 +153,11 @@ class ProxyList:
 
     def start_update(self, interval = 300, sources = DEFAULT_SOURCES, check = False):
 
-        self.__stop_update = False
-
         self.__update(sources, interval, check)
 
     def stop_update(self):
 
-        self.__stop_update = True
+        self.__cancel_update_timer()
 
     def get(self, selector = None):
 
