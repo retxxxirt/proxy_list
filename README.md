@@ -1,8 +1,10 @@
 This package help you to manage proxy list.
 
 Recently support next sites:
-<a href = 'http://spys.one/proxies/'>spys.one</a>,
 <a href = 'https://free-proxy-list.net/'>free-proxy-list.net</a>,
+<a href = 'https://www.us-proxy.org/'>us-proxy.org</a>,
+<a href = 'https://www.sslproxies.org/'>sslproxies.org</a>,
+<a href = 'https://www.socks-proxy.net/'>socks-proxy.net</a>,
 <a href = 'https://hidester.com/proxylist/'>hidester.com</a>
 and your custom parsers.
 
@@ -20,7 +22,7 @@ proxy_list.update()
 
 proxy = proxy_list.get({'counrty': ['US', 'GB'], 'type': 'https'})
 
-response = request.get('https://google.com', proxy = {'https': proxy['address'])})
+response = request.get('https://google.com', proxies = {'https': proxy['address'])})
 ```
 
 <h2> Methods </h2>
@@ -32,8 +34,8 @@ Update proxy list.
 <h4> Arguments: </h4>
 <ul>
     <li>
-        <b>sources</b>
-        - list of sources. May contain name of built-in parser
+        <b>parsers</b>
+        - list of parsers. May contain name of built-in parser
         (for example 'spys.one') or custom parser definitions. This definition
         should return list of proxy objects. Default - all built-in parsers.
     </li>
@@ -53,8 +55,8 @@ Start update proxy list with interval.
 <ul>
     <li> <b>interval</b> - interval of update. Default - 300s</li>
     <li>
-        <b>sources</b>
-        - list of sources. May contain name of built-in parser
+        <b>parsers</b>
+        - list of parsers. May contain name of built-in parser
         (for example 'spys.one') or custom parser definitions. This definition
         should return list of proxy objects. Default - all built-in parsers.
     </li>

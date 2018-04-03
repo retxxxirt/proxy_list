@@ -2,13 +2,14 @@ import random
 import requests
 from threading import Thread, Timer
 
-from .sources import BUILT_IN_SOURCES, DEFAULT_SOURCES
+from .parser.parser import Parser
 
 class ProxyList:
 
     def __init__(self):
 
         self.__proxies = []
+        self.parser = Parser()
 
         self.__update_timer = None
 
@@ -17,7 +18,7 @@ class ProxyList:
 
         for key in selector:
 
-            if type(selector[key]) != list:
+            if type(selector[key]) is not list:
 
                 selector[key] = [selector[key]]
 
@@ -94,66 +95,51 @@ class ProxyList:
 
             self.__update_timer.cancel()
 
-    def __start_update_timer(self, *args, **kwargs):
+    def __start_update_timer(self, interval, target, arguments):
 
         self.__cancel_update_timer()
 
-        self.__update_timer = Timer(*args, **kwargs)
+        self.__update_timer = Timer(interval, target, arguments)
 
         self.__update_timer.start()
 
-    def __update(self, sources, interval, check):
+    def __update(self, parsers, safe_parse, interval, check):
 
         if interval:
 
-            self.__start_update_timer(interval, self.__update, [sources, interval, check])
+            self.__start_update_timer(interval, self.__update, [parsers, safe_parse, interval, check])
 
         unique_proxies = {}
 
-        for source in sources:
+        for proxy in self.parser.parse(parsers, safe_parse):
 
-            if type(source) == str:
+            proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
 
-                proxies = BUILT_IN_SOURCES[source]()
+            unique_proxies[proxy['address']] = proxy
 
-
-
-            else:
-
-                proxies = source()
-
-            for proxy in proxies:
-                proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
-
-                unique_proxies[proxy['address']] = proxy
-
-        proxies = [unique_proxies[key] for key in unique_proxies]
+        proxies = [unique_proxies[address] for address in unique_proxies]
 
         if check:
 
-            if type(check) == dict:
+            if type(check) is dict:
 
                 self.__proxies = self.__check_proxies(proxies, **check)
-
-
 
             else:
 
                 self.__proxies = self.__check_proxies(proxies)
 
-
-
         else:
 
             self.__proxies = proxies
 
-    def update(self, sources = DEFAULT_SOURCES, check = False):
+    def update(self, parsers = None, check = False, safe_parse = True):
 
-        self.__update(sources, 0, check)
+        self.__update(parsers, safe_parse, 0, check)
 
-    def start_update(self, interval = 300, sources = DEFAULT_SOURCES, check = False):
+    def start_update(self, interval = 300, parsers = None, check = False, safe_parse = True):
 
-        self.__update(sources, interval, check)
+        self.__update(parsers, safe_parse, interval, check)
 
     def stop_update(self):
 
