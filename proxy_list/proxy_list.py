@@ -2,7 +2,7 @@ import random
 import requests
 from threading import Thread, Timer
 
-from .parser.parser import Parser
+from .parser import Parser
 
 class ProxyList:
 

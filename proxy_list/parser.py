@@ -13,13 +13,13 @@ class Parser:
         self.__parsers_by_group = {}
         self.__default_parsers_argument = []
 
-        directory = '%s\\built_in\\' % os.path.dirname(os.path.realpath(__file__))
+        directory = '%s\\parsers\\' % os.path.dirname(os.path.realpath(__file__))
 
         for file in os.listdir(directory):
 
             if os.path.isfile('%s%s' % (directory, file)):
 
-                module = import_module('proxy_list.parser.built_in.' + file[:-3])
+                module = import_module('proxy_list.parsers.' + file[:-3])
 
                 self.__parsers_by_group[module.group] = []
 

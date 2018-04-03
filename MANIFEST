@@ -4,4 +4,4 @@ setup.py
 proxy_list\__init__.py
 proxy_list\api.py
 proxy_list\proxy_list.py
-proxy_list\sources.py
+proxy_list\utilities.py
