@@ -6,3 +6,6 @@ proxy_list\api.py
 proxy_list\parser.py
 proxy_list\proxy_list.py
 proxy_list\utilities.py
+proxy_list\parsers\free_proxy_list_net.py
+proxy_list\parsers\hidester_com.py
+proxy_list\parsers\spys_one.py

@@ -1,4 +1,6 @@
 .idea
 dist
 
+MANIFEST
+
 tests/temp.py

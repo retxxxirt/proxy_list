@@ -1,8 +1,11 @@
 import time
 
 from proxy_list import ProxyList
+import proxy_list.parsers.spys_one as spys_one
+import proxy_list.parsers.hidester_com as hidester_com
+import proxy_list.parsers.free_proxy_list_net as free_proxy_list_net
 
-def check_parse_is_valid(parsers, min_proxies):
+def check_parser_valid(parsers, min_proxies):
 
     for parser in parsers:
 
@@ -16,7 +19,7 @@ def check_parse_is_valid(parsers, min_proxies):
 
         time.sleep(1)
 
-def check_group_parsers_is_valid(group, min_proxies):
+def check_group_valid(group, min_proxies):
 
     proxy_list = ProxyList()
 
@@ -32,19 +35,13 @@ def check_group_parsers_is_valid(group, min_proxies):
 
 def test_parsers_spys_one():
 
-    from proxy_list.parser.built_in.spys_one import parsers
-
-    check_parse_is_valid(parsers, 500)
+    check_parser_valid(spys_one.parsers, 500)
 
 def test_parsers_hidester_com():
 
-    from proxy_list.parser.built_in.hidester_com import parsers
-
-    check_parse_is_valid(parsers, 1000)
+    check_parser_valid(hidester_com.parsers, 1000)
 
 def test_parsers_free_proxy_list_net():
-
-    from proxy_list.parser.built_in.free_proxy_list_net import parsers
 
     min_proxies = {
 
@@ -56,19 +53,19 @@ def test_parsers_free_proxy_list_net():
         'sslproxies_org': 100
     }
 
-    for parser in parsers:
+    for parser in free_proxy_list_net.parsers:
 
-        check_parse_is_valid([parser], min_proxies[parser.__name__])
+        check_parser_valid([parser], min_proxies[parser.__name__])
 
 def test_proxy_list_with_spys_one_parsers():
 
-    check_group_parsers_is_valid('spys.one', 1500)
+    check_group_valid('spys.one', 1500)
 
 def test_proxy_list_with_hidester_com_parsers():
 
-    check_group_parsers_is_valid('hidester.com', 1200)
+    check_group_valid('hidester.com', 1200)
 
 def test_proxy_list_with_free_proxy_list_net_parsers():
 
-    check_group_parsers_is_valid('free-proxy-list.net', 600)
+    check_group_valid('free-proxy-list.net', 600)
 

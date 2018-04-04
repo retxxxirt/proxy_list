@@ -137,7 +137,7 @@ class ProxyList:
 
         self.__update(parsers, safe_parse, 0, check)
 
-    def start_update(self, interval = 300, parsers = None, check = False, safe_parse = True):
+    def start_update(self, parsers = None, interval = 300, check = False, safe_parse = True):
 
         self.__update(parsers, safe_parse, interval, check)
 

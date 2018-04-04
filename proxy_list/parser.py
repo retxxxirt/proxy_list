@@ -13,7 +13,7 @@ class Parser:
         self.__parsers_by_group = {}
         self.__default_parsers_argument = []
 
-        directory = '%s\\parsers\\' % os.path.dirname(os.path.realpath(__file__))
+        directory = '%s/parsers/' % os.path.dirname(os.path.realpath(__file__))
 
         for file in os.listdir(directory):
 
@@ -108,7 +108,7 @@ class Parser:
 
                         disable_mode = True
 
-                        built_in_parsers = self.__parsers
+                        built_in_parsers = self.__parsers.copy()
 
                     change_built_in_parsers(parser_argument[1:], 'remove')
 
