@@ -1,6 +1,9 @@
 .idea
 dist
 
+.pytest_cache
+tests/.pytest_cache
+
 MANIFEST
 
 tests/temp.py

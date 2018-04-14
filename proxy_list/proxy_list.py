@@ -1,16 +1,26 @@
+import os
 import random
 import requests
+from importlib import import_module
 from threading import Thread, Timer
 
-from .parser import Parser
+default_url = 'example.org'
+default_timeout = 10
+default_chunk_size = 100
+
+default_parsers = []
+
+for file in os.listdir('%s/parsers/' % os.path.dirname(os.path.realpath(__file__))):
+
+    if file[-3:] == '.py':
+
+        default_parsers.append(getattr(import_module('proxy_list.parsers.' + file[:-3]), file[:-3]))
 
 class ProxyList:
 
     def __init__(self):
 
         self.__proxies = []
-        self.parser = Parser()
-
         self.__update_timer = None
 
     @staticmethod
@@ -18,48 +28,89 @@ class ProxyList:
 
         for key in selector:
 
-            if type(selector[key]) is not list:
+            if type(selector[key]) != list:
 
                 selector[key] = [selector[key]]
 
         for key in selector:
 
-            is_appropriate = False
-
-            for value in selector[key]:
-
-                if proxy[key] == value:
-
-                    is_appropriate = True
-
-                    break
-
-            if not is_appropriate:
+            if proxy[key] not in selector[key]:
 
                 return False
 
         return True
 
     @staticmethod
-    def __check_proxies(proxies, timeout = 10, chunk_size = 100):
+    def __get_proxies(parsers):
 
-        def check_proxy(proxy, thread):
+        threads, proxies = [], []
 
-            protocol = 'http' if proxy['type'] == 'http' else 'https'
+        for parser in parsers:
 
-            url = '%s://example.org/' % protocol
+            def parse(parser):
 
-            try:
+                for proxy in parser():
 
-                response = requests.get(url, timeout = timeout, proxies = {protocol: proxy['address']})
+                    proxies.append(proxy)
 
-                if response.status_code == 200 and response.url == url:
+            threads.append(Thread(target = parse, args = [parser], name = 'parse %s' % parser.__name__))
 
-                    proxies_checked.append(proxy)
+        for thread in threads:
 
-            except:
+            thread.start()
 
-                pass
+        for thread in threads:
+
+            thread.join()
+
+        return proxies
+
+    def __cancel_update_timer(self):
+
+        if self.__update_timer:
+
+            self.__update_timer.cancel()
+
+    def __start_update_timer(self, interval, target, args, kwargs):
+
+        self.__cancel_update_timer()
+
+        self.__update_timer = Timer(interval, target, args, kwargs)
+
+        self.__update_timer.start()
+
+    @staticmethod
+    def check(proxy, url = default_url, timeout = default_timeout):
+
+        if type(proxy) == str:
+
+            proxy = {'url': proxy, 'type': proxy.split('//')[0]}
+
+        protocol = 'http' if proxy['type'] == 'http' else 'https'
+
+        url = '%s://%s/' % (protocol, url)
+
+        try:
+
+            response = requests.get(url, timeout = timeout, proxies = {protocol: proxy['url']})
+
+            if response.status_code == 200 and response.url == url:
+
+                return True
+
+        except:
+
+            pass
+
+        return False
+
+    def check_many(self, proxies, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
+
+        def check(proxy_list, proxy, url, timeout, thread):
+
+            if proxy_list.check(proxy, url, timeout):
+
+                checked_proxies.append(proxy)
 
             if thread:
 
@@ -67,17 +118,22 @@ class ProxyList:
 
                 thread.join()
 
-        proxies_checked, threads = [], []
+        checked_proxies, threads = [], []
 
         for index, proxy in enumerate(proxies):
 
-            next_thread = None
+            thread = None
 
             if index >= chunk_size:
 
-                next_thread = threads[index - chunk_size]
+                thread = threads[index - chunk_size]
 
-            threads.append(Thread(target = check_proxy, args = [proxy, next_thread]))
+            threads.append(Thread(
+
+                target = check,
+                args = [self, proxy, url, timeout, thread],
+                name = 'check proxy %s' % proxy['url']
+            ))
 
         for thread in threads[-chunk_size:]:
 
@@ -87,98 +143,73 @@ class ProxyList:
 
             thread.join()
 
-        return proxies_checked
+        return checked_proxies
 
-    def __cancel_update_timer(self):
-
-        if self.__update_timer:
-
-            self.__update_timer.cancel()
-
-    def __start_update_timer(self, interval, target, arguments):
-
-        self.__cancel_update_timer()
-
-        self.__update_timer = Timer(interval, target, arguments)
-
-        self.__update_timer.start()
-
-    def __update(self, parsers, safe_parse, interval, check):
+    def update(self, interval = 0, parsers = default_parsers, disabled_parsers = None, selector = None, check = False,
+               url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
 
         if interval:
 
-            self.__start_update_timer(interval, self.__update, [parsers, safe_parse, interval, check])
+            self.__start_update_timer(interval, self.update, [], locals())
+
+        if disabled_parsers:
+
+            for parser in disabled_parsers:
+
+                if parser in parsers:
+
+                    parsers.remove(parser)
 
         unique_proxies = {}
 
-        for proxy in self.parser.parse(parsers, safe_parse):
+        for proxy in self.__get_proxies(parsers):
 
-            proxy['address'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
+            proxy['url'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
 
-            unique_proxies[proxy['address']] = proxy
+            unique_proxies[proxy['url']] = proxy
 
-        proxies = [unique_proxies[address] for address in unique_proxies]
+        self.__proxies = [unique_proxies[url] for url in unique_proxies]
 
         if check:
 
-            if type(check) is dict:
+            self.__proxies = self.check_many(self.__proxies, url, timeout, chunk_size)
 
-                self.__proxies = self.__check_proxies(proxies, **check)
+        if not interval:
 
-            else:
-
-                self.__proxies = self.__check_proxies(proxies)
-
-        else:
-
-            self.__proxies = proxies
-
-    def update(self, parsers = None, check = False, safe_parse = True):
-
-        self.__update(parsers, safe_parse, 0, check)
-
-    def start_update(self, parsers = None, interval = 300, check = False, safe_parse = True):
-
-        self.__update(parsers, safe_parse, interval, check)
+            return self.get(selector)
 
     def stop_update(self):
 
         self.__cancel_update_timer()
 
-    def get(self, selector = None):
+    def get(self, selector = None, count = None):
+
+        if count is None:
+
+            count = len(self.__proxies)
+
+        proxies = self.__proxies.copy()
 
         if selector:
-
-            proxies = self.__proxies
 
             random.shuffle(proxies)
 
-            for proxy in proxies:
+            counter = 0
 
-                if self.__check_selector(proxy, selector):
+            for proxy in proxies.copy():
 
-                    return proxy
+                if not self.__check_selector(proxy, selector):
 
-            return None
+                    proxies.remove(proxy)
 
-        else:
+                else:
 
-            return random.choice(self.__proxies)
+                    counter += 1
 
-    def get_all(self, selector = None):
+                if counter >= count:
 
-        if selector:
+                    break
 
-            proxies = []
+            count = counter
 
-            for proxy in self.__proxies:
-
-                if self.__check_selector(proxy, selector):
-
-                    proxies.append(proxy)
-
-            return proxies
-
-        else:
-
-            return self.__proxies
+        return proxies[:count]

@@ -20,9 +20,9 @@ import requests
 
 proxy_list.update()
 
-proxy = proxy_list.get({'counrty': ['US', 'GB'], 'type': 'https'})
+proxy = proxy_list.get({'country': ['US', 'GB'], 'type': 'https'})
 
-response = request.get('https://google.com', proxies = {'https': proxy['address'])})
+response = requests.get('https://google.com', proxies = {'https': proxy['address'])})
 ```
 
 <h2> Methods </h2>

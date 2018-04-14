@@ -2,8 +2,6 @@ import json
 import requests
 from iso3166 import countries
 
-group = 'hidester.com'
-
 def hidester_com():
 
     response = requests.get(
@@ -41,7 +39,8 @@ def hidester_com():
             'VIETNAM': 'Viet Nam',
             'CZECH REPUBLIC': 'Czechia',
             'IRAN': 'Iran, Islamic Republic of',
-            'BOLIVIA': 'Bolivia, Plurinational State of'
+            'BOLIVIA': 'Bolivia, Plurinational State of',
+            'TANZANIA': 'Tanzania, United Republic of'
         }
 
         if proxy['country'] in countries_iso3166:
@@ -59,5 +58,3 @@ def hidester_com():
         })
 
     return proxies
-
-parsers = [hidester_com]
