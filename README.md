@@ -10,7 +10,7 @@ and your custom parsers.
 
 <h2> Installation </h2>
 
-    pip install proxy_list
+    $ pip install proxy_list
 
 <h2> Usage </h2>
 
@@ -22,7 +22,7 @@ proxy_list.update()
 
 proxy = proxy_list.get({'country': ['US', 'GB'], 'type': 'https'})
 
-response = requests.get('https://google.com', proxies = {'https': proxy['address'])})
+response = requests.get('https://google.com', proxies = {'https': proxy['address']})
 ```
 
 <h2> Methods </h2>

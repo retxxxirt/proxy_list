@@ -1,9 +1,9 @@
 .idea
-dist
 
-.pytest_cache
-tests/.pytest_cache
+*.pyc
+dist
 
 MANIFEST
 
+*/pytest_cache
 tests/temp.py

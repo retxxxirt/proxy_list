@@ -2,6 +2,8 @@ import json
 import requests
 from iso3166 import countries
 
+from ..utilities import proxy_is_valid
+
 def hidester_com():
 
     response = requests.get(
@@ -47,14 +49,19 @@ def hidester_com():
 
             proxy['country'] = countries_iso3166[proxy['country']]
 
-        proxies.append({
+        proxy = {
 
             'ip': proxy['IP'],
             'port': str(proxy['PORT']),
 
             'type': proxy['type'],
+            'anonymity': proxy['anonymity'].lower(),
 
             'country': countries.get(proxy['country']).alpha2
-        })
+        }
+
+        if proxy_is_valid(proxy):
+
+            proxies.append(proxy)
 
     return proxies

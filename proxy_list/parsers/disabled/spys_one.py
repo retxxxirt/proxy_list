@@ -3,6 +3,8 @@ import js2py
 import requests
 from pyquery import PyQuery
 
+from proxy_list.utilities import proxy_is_valid
+
 def spys_one():
 
     def get_proxies(url):
@@ -26,19 +28,37 @@ def spys_one():
 
             if len(type) > 1 and type[1] == 'S':
 
-                type = ['https']
+                type = 'https'
+
+            else:
+
+                type = type[0].lower()
 
             js_port_code = '; function a() {return \'\'%s} a()' % td_elements[0].find('.spy14 script').text()[43:-1]
 
-            proxies.append({
+            port = str(js2py.eval_js(js_secret_code + js_port_code))
+
+            anonymity_dict = {
+
+                'NOA': 'transparent',
+                'ANM': 'anonymous',
+                'HIA': 'elite'
+            }
+
+            proxy = {
 
                 'ip': td_elements[0].find('.spy14').contents()[0],
-                'port': str(js2py.eval_js(js_secret_code + js_port_code)),
+                'port': port,
 
-                'type': type[0].lower(),
+                'type': type,
+                'anonymity': anonymity_dict[td_elements[2].text()],
 
                 'country': td_elements[3].children('a').attr('href').split('/')[-2]
-            })
+            }
+
+            if proxy_is_valid(proxy):
+
+                proxies.append(proxy)
 
         return proxies
 

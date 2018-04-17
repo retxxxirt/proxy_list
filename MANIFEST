@@ -3,9 +3,8 @@ setup.cfg
 setup.py
 proxy_list\__init__.py
 proxy_list\api.py
-proxy_list\parser.py
 proxy_list\proxy_list.py
-proxy_list\utilities.py
+proxy_list\utilises.py
 proxy_list\parsers\free_proxy_list_net.py
 proxy_list\parsers\hidester_com.py
-proxy_list\parsers\spys_one.py
+proxy_list\parsers\disabled\spys_one.py

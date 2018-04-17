@@ -4,7 +4,9 @@ import requests
 from importlib import import_module
 from threading import Thread, Timer
 
-default_url = 'example.org'
+from .utilities import selector_is_valid
+
+default_url = 'https://example.org/'
 default_timeout = 10
 default_chunk_size = 100
 
@@ -14,7 +16,7 @@ for file in os.listdir('%s/parsers/' % os.path.dirname(os.path.realpath(__file__
 
     if file[-3:] == '.py':
 
-        default_parsers.append(getattr(import_module('proxy_list.parsers.' + file[:-3]), file[:-3]))
+        default_parsers.append(getattr(import_module('proxy_list.parsers.%s' % file[:-3]), file[:-3]))
 
 class ProxyList:
 
@@ -24,24 +26,7 @@ class ProxyList:
         self.__update_timer = None
 
     @staticmethod
-    def __check_selector(proxy, selector):
-
-        for key in selector:
-
-            if type(selector[key]) != list:
-
-                selector[key] = [selector[key]]
-
-        for key in selector:
-
-            if proxy[key] not in selector[key]:
-
-                return False
-
-        return True
-
-    @staticmethod
-    def __get_proxies(parsers):
+    def __parse(parsers):
 
         threads, proxies = [], []
 
@@ -71,11 +56,11 @@ class ProxyList:
 
             self.__update_timer.cancel()
 
-    def __start_update_timer(self, interval, target, args, kwargs):
+    def __start_update_timer(self, interval, target, kwargs):
 
         self.__cancel_update_timer()
 
-        self.__update_timer = Timer(interval, target, args, kwargs)
+        self.__update_timer = Timer(interval, target, [], kwargs)
 
         self.__update_timer.start()
 
@@ -86,23 +71,17 @@ class ProxyList:
 
             proxy = {'url': proxy, 'type': proxy.split('//')[0]}
 
-        protocol = 'http' if proxy['type'] == 'http' else 'https'
-
-        url = '%s://%s/' % (protocol, url)
-
         try:
 
-            response = requests.get(url, timeout = timeout, proxies = {protocol: proxy['url']})
+            response = requests.get(url, timeout = timeout, proxies = {'http': proxy['url'], 'https': proxy['url']})
 
-            if response.status_code == 200 and response.url == url:
+            if response.status_code == 200:
 
                 return True
 
         except:
 
-            pass
-
-        return False
+            return False
 
     def check_many(self, proxies, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
 
@@ -145,12 +124,16 @@ class ProxyList:
 
         return checked_proxies
 
-    def update(self, interval = 0, parsers = default_parsers, disabled_parsers = None, selector = None, check = False,
-               url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
+    def update(self, interval = 0, parsers = default_parsers, disabled_parsers = None, selector = None, count = None,
+               check = False, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
 
         if interval:
 
-            self.__start_update_timer(interval, self.update, [], locals())
+            kwargs = locals()
+
+            del kwargs['self']
+
+            self.__start_update_timer(interval, self.update, kwargs)
 
         if disabled_parsers:
 
@@ -162,7 +145,7 @@ class ProxyList:
 
         unique_proxies = {}
 
-        for proxy in self.__get_proxies(parsers):
+        for proxy in self.__parse(parsers):
 
             proxy['url'] = '%s://%s:%s' % (proxy['type'], proxy['ip'], proxy['port'])
 
@@ -170,13 +153,17 @@ class ProxyList:
 
         self.__proxies = [unique_proxies[url] for url in unique_proxies]
 
-        if check:
+        if selector:
+
+            self.__proxies = self.get(selector)
+
+        if check or url != default_url or timeout != default_timeout or chunk_size != default_chunk_size:
 
             self.__proxies = self.check_many(self.__proxies, url, timeout, chunk_size)
 
         if not interval:
 
-            return self.get(selector)
+            return self.get(None, count)
 
     def stop_update(self):
 
@@ -198,13 +185,13 @@ class ProxyList:
 
             for proxy in proxies.copy():
 
-                if not self.__check_selector(proxy, selector):
+                if selector_is_valid(proxy, selector):
 
-                    proxies.remove(proxy)
+                    counter += 1
 
                 else:
 
-                    counter += 1
+                    proxies.remove(proxy)
 
                 if counter >= count:
 

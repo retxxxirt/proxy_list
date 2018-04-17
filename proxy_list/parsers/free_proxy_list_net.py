@@ -2,6 +2,8 @@ import time
 import requests
 from pyquery import PyQuery
 
+from ..utilities import proxy_is_valid
+
 def free_proxy_list_net():
 
     def get_data(url):
@@ -34,20 +36,31 @@ def free_proxy_list_net():
             if url == 'https://socks-proxy.net':
 
                 type = row[4].lower()
+                anonymity = row[5].lower()
 
             else:
 
                 type = 'http' if row[6] == 'no' else 'https'
+                anonymity = row[4]
 
-            proxies.append({
+            if anonymity == 'elite proxy':
+
+                anonymity = 'elite'
+
+            proxy = {
 
                 'ip': row[0],
                 'port': row[1],
 
                 'type': type,
+                'anonymity': anonymity,
 
                 'country': row[2]
-            })
+            }
+
+            if proxy_is_valid(proxy):
+
+                proxies.append(proxy)
 
         time.sleep(1)
 
