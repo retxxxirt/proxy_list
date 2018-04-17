@@ -83,11 +83,12 @@ class ProxyList:
 
             return False
 
-    def check_many(self, proxies, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
+    @staticmethod
+    def check_many(proxies, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
 
-        def check(proxy_list, proxy, url, timeout, thread):
+        def check(proxy, url, timeout, thread):
 
-            if proxy_list.check(proxy, url, timeout):
+            if ProxyList.check(proxy, url, timeout):
 
                 checked_proxies.append(proxy)
 
@@ -110,7 +111,7 @@ class ProxyList:
             threads.append(Thread(
 
                 target = check,
-                args = [self, proxy, url, timeout, thread],
+                args = [proxy, url, timeout, thread],
                 name = 'check proxy %s' % proxy['url']
             ))
 
