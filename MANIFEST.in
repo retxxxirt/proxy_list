@@ -1,1 +1,1 @@
-recursive-include proxy_list/parsers *.py
+include proxy_list/parsers/*.py
