@@ -8,7 +8,7 @@ from .utilities import selector_is_valid
 
 default_url = 'https://example.org/'
 default_timeout = 10
-default_chunk_size = 100
+default_check_interval = 0.03
 
 default_parsers = []
 
@@ -81,52 +81,41 @@ class ProxyList:
 
         except:
 
-            return False
+            pass
+
+        return False
 
     @staticmethod
-    def check_many(proxies, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
+    def check_many(proxies, url = default_url, timeout = default_timeout, interval = default_check_interval):
 
-        def check(proxy, url, timeout, thread):
+        checked_proxies, timers = [], []
+
+        def check_many():
+
+            proxy = proxies.pop()
+
+            if len(proxies):
+
+                timer = Timer(interval, check_many)
+
+                timer.start()
+
+                timers.append(timer)
 
             if ProxyList.check(proxy, url, timeout):
 
                 checked_proxies.append(proxy)
 
-            if thread:
+        check_many()
 
-                thread.start()
+        for timer in timers:
 
-                thread.join()
-
-        checked_proxies, threads = [], []
-
-        for index, proxy in enumerate(proxies):
-
-            thread = None
-
-            if index >= chunk_size:
-
-                thread = threads[index - chunk_size]
-
-            threads.append(Thread(
-
-                target = check,
-                args = [proxy, url, timeout, thread],
-                name = 'check proxy %s' % proxy['url']
-            ))
-
-        for thread in threads[-chunk_size:]:
-
-            thread.start()
-
-        for thread in threads[-chunk_size:]:
-
-            thread.join()
+            timer.join()
 
         return checked_proxies
 
     def update(self, interval = 0, parsers = default_parsers, disabled_parsers = None, selector = None, count = None,
-               check = False, url = default_url, timeout = default_timeout, chunk_size = default_chunk_size):
+               check = False, url = default_url, timeout = default_timeout, check_interval = default_check_interval):
 
         if interval:
 
@@ -158,9 +147,9 @@ class ProxyList:
 
             self.__proxies = self.get(selector)
 
-        if check or url != default_url or timeout != default_timeout or chunk_size != default_chunk_size:
+        if check or url != default_url or timeout != default_timeout or check_interval != default_check_interval:
 
-            self.__proxies = self.check_many(self.__proxies, url, timeout, chunk_size)
+            self.__proxies = self.check_many(self.__proxies, url, timeout, check_interval)
 
         if not interval:
 

@@ -4,7 +4,7 @@ setup(
 
     name = 'proxy_list',
     packages = ['proxy_list'],
-    version = '0.3.5',
+    version = '0.3.6',
     description = 'Free proxy lists',
     author = 'retxxxirt',
     author_email = 'retxxirt@gmail.com',

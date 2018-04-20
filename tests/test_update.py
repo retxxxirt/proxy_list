@@ -21,7 +21,7 @@ def test_default():
 
 def test_with_check():
 
-    check_proxies(ProxyList().update(check = True), 200)
+    check_proxies(ProxyList().update(check = True), 350)
 
 def test_with_specified_parsers():
 
@@ -33,11 +33,11 @@ def test_with_disabled_parsers():
 
     from proxy_list.parsers.hidester_com import hidester_com
 
-    check_proxies(ProxyList().update(disabled_parsers = [hidester_com()]), 600)
+    check_proxies(ProxyList().update(disabled_parsers = [hidester_com]), 600)
 
 def test_with_specified_url():
 
-    check_proxies(ProxyList().update(url = 'https://google.com/'), 200)
+    check_proxies(ProxyList().update(url = 'https://google.com/'), 250)
 
 def test_with_selector():
 
