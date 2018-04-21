@@ -1,6 +1,8 @@
 import os
+import time
 import random
 import requests
+from queue import Queue
 from importlib import import_module
 from threading import Thread, Timer
 
@@ -88,29 +90,31 @@ class ProxyList:
     @staticmethod
     def check_many(proxies, url = default_url, timeout = default_timeout, interval = default_check_interval):
 
-        checked_proxies, timers = [], []
+        queue, checked_proxies, last_time = Queue(), [], 0
 
-        def check_many():
+        for proxy in proxies:
 
-            proxy = proxies.pop()
+            queue.put(proxy)
 
-            if len(proxies):
+        while not queue.empty():
 
-                timer = Timer(interval, check_many)
+            current_time = time.time()
 
-                timer.start()
+            if current_time - last_time >= interval:
 
-                timers.append(timer)
+                last_time = current_time
 
-            if ProxyList.check(proxy, url, timeout):
+                def check(queue, proxy, url, timeout):
 
-                checked_proxies.append(proxy)
+                    if ProxyList.check(proxy, url, timeout):
 
-        check_many()
+                        checked_proxies.append(proxy)
 
-        for timer in timers:
+                    queue.task_done()
 
-            timer.join()
+                Thread(target = check, args = [queue, queue.get(), url, timeout]).start()
+
+        queue.join()
 
         return checked_proxies
 
